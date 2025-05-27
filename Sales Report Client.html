@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <title>Sales Risk & Opportunity Report</title>
+  <style>
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background-color: #f4f6f9;
+      color: #1c2d5a;
+      margin: 0;
+      display: flex;
+    }
+    nav.sidebar {
+      width: 60px;
+      background-color: #1c2d5a;
+      min-height: 100vh;
+    }
+    .main-content {
+      flex: 1;
+      padding: 40px;
+    }
+    h1, h2, h3 {
+      color: #1c2d5a;
+      margin-top: 0;
+    }
+    .section {
+      margin-bottom: 50px;
+    } 
+    .summary-grid {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 24px;
+      flex: 1;
+      min-width: 320px;
+    }
+      table.call-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .call-table th, .call-table td {
+      word-wrap: break-word;
+      padding: 10px;
+      border: 1px solid #e0e6ed;
+      text-align: left;
+    }
+    .call-table th {
+      background: #f0f2f5;
+      color: #1c2d5a;
+      font-weight: 600;
+    } canvas {
+      width: 100% !important;
+      max-width: 400px;
+      height: auto !important;
+      margin: 0 auto;
+      display: block;
+    }
+     table.risk-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .risk-table th, .risk-table td {
+      word-wrap: break-word;
+      padding: 10px;
+      border: 1px solid #e0e6ed;
+      text-align: left;
+    }
+    .risk-table th {
+      background: #f0f2f5;
+      color: #1c2d5a;
+      font-weight: 600;
+    } canvas {
+      width: 100% !important;
+      max-width: 400px;
+      height: auto !important;
+      margin: 0 auto;
+      display: block;
+    }
+    
+    ul {
+      padding-left: 20px;
+    }
+    .btn-link {
+      display: inline-block;
+      background-color: #1c2d5a;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+      margin-top: 5px;
+    }
+    .btn-link:hover {
+      background-color: #021c37;}
+      
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: white;
+    }
+
+    .tag.score { background-color: #f5171f; }
+    ul { padding-left: 20px; }
+    .summary-flex {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.summary-table, .summary-chart {
+  flex: 1;
+  min-width: 320px;
+}
+    
+    @media (max-width: 600px) {
+      body {
+        flex-direction: column;
+      }
+
+      nav.sidebar {
+        display: none;
+      }
+
+      .main-content {
+        padding: 20px;
+      }
+
+      .summary-grid {
+        flex-direction: column;
+      }
+
+      canvas {
+        max-width: 100% !important;
+        height: auto !important;
+      }
+    }.summary-snapshot {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-flex {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.summary-table {
+  flex: 1;
+  min-width: 340px;
+}
+
+.summary-chart {
+  flex: 1;
+  min-width: 340px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 800px) {
+  .summary-flex {
+    flex-direction: column;
+  }
+}
+.risk-badge {
+  background-color: #f5171f;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 16px;
+  margin-left: 8px;
+  display: inline-block;
+}
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* ключевая строка */
+  }
+  .summary-table th, .summary-table td {
+    padding: 12px;
+    border: 1px solid #d0d7de;
+    text-align: left;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+  }
+  .summary-table th:nth-child(1),
+  .summary-table td:nth-child(1) {
+    width: 30%;
+  }
+  .summary-table th:nth-child(2),
+  .summary-table td:nth-child(2) {
+    width: 20%;
+  }
+  .summary-table th:nth-child(3),
+  .summary-table td:nth-child(3) {
+    width: 50%;
+  }
+</style>
+<style>
+  .score-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+  }
+
+  /* Checklist Score: зелёная шкала (0–18) */
+  .score-low {
+    background-color: #e74c3c;
+  }
+  .score-medium {
+    background-color: #f1c40f;
+  }
+  .score-high {
+    background-color: #2ecc71;
+  }
+
+  /* Triggers Count: обратная (0–7) */
+  .risk-low {
+    background-color: #2ecc71;
+  }
+  .risk-medium {
+    background-color: #f39c12;
+  }
+  .risk-high {
+    background-color: #e74c3c;
+  }
+</style>
+
+
+
+
+
+
+  </style>
+</head>
+<body>
+<nav class="sidebar"></nav>
+<div class="main-content">
+  <h1>Sales Risk & Opportunity Report</h1>
+<p><strong>Date:</strong> <span id="report-date"></span></p>
+  <p><a href="https://docs.google.com/spreadsheets/d/1xxN50wXMvf8C4t8axT06_JnH4R8XFb30fIvoLx25Lxo/edit?usp=sharing" class="btn-link">View Full Report</a></p>
+  <p><a href="https://drive.google.com/file/d/1SughxvCRa87mv_C5j4kiHUIV_Mv9U4mJ/view?usp=share_link" class="btn-link">View Transcripts</a></p>
+
+ <div class="section summary-grid">
+    <div class="card">
+    <h2>Summary Snapshot</h2>
+    <p>This section provides a high-level overview of all uploaded and analyzed calls. It shows how many total recordings were submitted, how many were excluded as duplicates or for technical reasons, and how many proceeded to full risk analysis.
+Key metrics include the number of valid calls, those flagged with high-risk sales execution issues, and how often multiple risks occurred in the same conversation — a strong indicator of systemic breakdowns in deal handling.</p>
+        <table class="call-table">
+          <tr><th>Metric</th><th>Value</th><th>Comment</th></tr>
+          <tr><td>Total uploaded calls</td><td>86</td><td>All calls uploaded by client</td></tr>
+          <tr><td>Duplicate calls removed</td><td>24</td><td>Removed during preprocessing</td></tr>
+          <tr><td>Total AI-analyzed calls</td><td id="total-calls">62</td><td>Unique calls after deduplication</td></tr>
+          <tr><td>Excluded Calls</td><td id="excluded-calls">1</td><td>Filtered due to technical/engagement issues: under 30s duration, no dialogue</td></tr>
+          <tr><td>Calls without triggers</td><td>10</td><td>Passed all filters</td></tr>
+          <tr><td>Calls flagged with high-risk triggers</td><td id="risk-calls">51</td><td>Top issue: No Next Step</td></tr>
+          <tr><td>Multiple triggers Calls (2+)</td><td id="multi-risk-calls">32</td><td>Indicates systemic issues</td></tr>
+         
+    
+</table>
+<table class="call-table">
+        <h3 style="margin-top: 40px;">Checklist Completion (Client-defined discovery fields)</h3>
+      <tr><th>Metric</th><th>Value</th><th>Comment</th></tr>
+      <tr><td>Average checklist score (max 18)</td><td>6.6</td><td>Low field coverage across conversations</td></tr>
+      <tr><td>Calls with score ≥ 10 (75–100% percentile)</td><td>15</td><td>Indicates some discovery coverage</td></tr>
+      <tr><td>Calls with score ≤ 4 (0–25% percentile)</td><td>19</td><td>High quoting risk — critical data points missing</td></tr>
+      <tr><td>Potential missed revenue</td><td>~$100K–$120K</td><td>Based on average deal size</td></tr>
+</table>
+  </div>
+        
+     
+      <div class="card">
+      <h2>General Call Analysis Overview</h2>
+<p>This chart breaks down all uploaded calls into flagged (with sales execution risks), excluded, and clean (no risk triggers).</p>
+<canvas id="riskPieChart" width="400" height="300"></canvas>
+
+
+
+<h3>Checklist Compliance Overview</h3>
+<p>This chart visualizes how calls are distributed across checklist score ranges. Higher scores indicate more complete quoting data.</p>
+<canvas id="checklistBarChart" width="600" height="300"></canvas>
+      
+    </div>
+</div>
+<div style="display: flex; gap: 4px; margin-bottom: 12px;">
+
+</div>
+<div class="section card">
+  <h3>Top 10 Checklist Coverage – Best Calls</h3>
+  <p>These calls have the highest checklist completion, reflecting strong discovery performance and comprehensive qualification.</p>
+
+  <table class="risk-table">
+    <tr>
+      <th>Call ID</th>
+      <th>Success Rate</th>
+      <th>Checklist Score<br>(max 18)</th>
+      <th>Percentile</th>
+      <th>Details</th>
+    </tr>
+
+    <tr>
+      <td>aud-158148566-5060-15@BJC.BGI.A.FA-1300.wav</td>
+      <td>83%</td>
+      <td>15</td>
+      <td>100%</td>
+      <td>
+        Setup confirmed from prior interaction.<br>
+        Pickup: Kosciuszko & Meridian, MS.<br>
+        Delivery: Tamaroa & Beardstown, IL.<br>
+        Pickup time: today 11AM–3PM.<br>
+        TPE appointment required.<br>
+        Commodity: steel beams / aluminum tubing.<br>
+        Trailer: 48 flat / 53.<br>
+        Rate: $1900–$2200 discussed.<br>
+        Contacts: Manny, Tiara, Jesus.<br>
+        Contact info: emails, phones.<br>
+        Broker MC: 167-225.<br>
+        Load refs: Post ID 77050, TQL PO.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-1885316935-5060-117@BJC.BGI.A.H-CD46.wav</td>
+      <td>72%</td>
+      <td>13</td>
+      <td>98%</td>
+      <td>
+        MC 166960 confirmed setup.<br>
+        Pickup: Laredo, TX.<br>
+        Delivery: Marcus Hook, PA + 2 stops.<br>
+        Detailed appt windows.<br>
+        Commodity: AC units (chillers).<br>
+        Weight: ~7000 lbs.<br>
+        Trailer: step deck, air ride.<br>
+        Special req: air ride.<br>
+        Rate: $6000.<br>
+        Contact method: cell phone.<br>
+        Broker MC discussed.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-1307568463-5060-45@BJC.BGI.A.H-CCF5</td>
+      <td>67%</td>
+      <td>12</td>
+      <td>95%</td>
+      <td>
+        Landstar carrier.<br>
+        Pickup: Houston, TX.<br>
+        Delivery: St. Rose, LA.<br>
+        Pickup: today 0800–2400.<br>
+        Delivery: next day 10:30AM.<br>
+        Commodity: Hazmat.<br>
+        Weight: 9060 lbs.<br>
+        Pallets: 14.<br>
+        Rate: $1172–$1200.<br>
+        Contacts: Jim + others.<br>
+        MC: 167225.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-1026507123-5060-50@BJC.BGI.A.CG-4BB6</td>
+      <td>67%</td>
+      <td>12</td>
+      <td>95%</td>
+      <td>
+        Prior setup, credit available.<br>
+        Pickup: Middlebury, IN.<br>
+        Delivery: Colorado.<br>
+        Trailer: Pintle Hitch, power only.<br>
+        Appt: no appointment.<br>
+        Rate: $1700–$1800.<br>
+        Contact: Thomas.<br>
+        Extension: 1237.<br>
+        MC: 166966.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-108380115-5060-23@BJC.BGI.A.CG-201E</td>
+      <td>61%</td>
+      <td>11</td>
+      <td>89%</td>
+      <td>
+        Prior business confirmed.<br>
+        Pickup: Yuma.<br>
+        Delivery: Sokka.<br>
+        Appointment: specified.<br>
+        Commodity: red onions.<br>
+        Weight: 43,000 lbs.<br>
+        Pallets: 17.<br>
+        Contacts: Vince, Thomas.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-299080597-5060-108@BJC.BGI.A.FA-5A58</td>
+      <td>61%</td>
+      <td>11</td>
+      <td>89%</td>
+      <td>
+        Setup with Landstar, BCO.<br>
+        Pickup: Pine Brook, NJ.<br>
+        Delivery: New Hampshire (state only).<br>
+        Pickup until 2PM.<br>
+        Delivery 6AM next day.<br>
+        Commodity: palletized materials.<br>
+        Weight: ~5000 lbs.<br>
+        Trailer: 53ft.<br>
+        Contacts: Jerry, Manny.<br>
+        Extension: 35982.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-1520754107-5060-7@BJC.BGI.A.DA-95D8</td>
+      <td>61%</td>
+      <td>11</td>
+      <td>89%</td>
+      <td>
+        Setup with J.B. Hunt.<br>
+        Pickup: Greensville, MS.<br>
+        Delivery: Mt Vernon, TX.<br>
+        Times: 7AM–4PM, 6–9:30PM.<br>
+        Trailer: van.<br>
+        Weight: 35,000 lbs.<br>
+        Rate: $500.<br>
+        MC: 166960.<br>
+        Load ref: 5R X 688 / FIG 880.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-1884237084-5060-35@BJC.BGI.A.H-C37D</td>
+      <td>61%</td>
+      <td>11</td>
+      <td>89%</td>
+      <td>
+        Pickup: Winter Haven.<br>
+        Delivery: Medley.<br>
+        Pickup time: 3PM or 7PM.<br>
+        Delivery: 8AM next day.<br>
+        Commodity: primer paint.<br>
+        Special req: hazmat cert.<br>
+        Rate: $1100 discussed.<br>
+        Contact: Lparton@TQL.com.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-42251903-5060-243@BJC.BGI.A.CG-B914</td>
+      <td>56%</td>
+      <td>10</td>
+      <td>77%</td>
+      <td>
+        Pickup: Hanford, CA.<br>
+        Delivery: Dalhut, TX.<br>
+        Pickup till 4PM.<br>
+        Delivery: Tues 7AM.<br>
+        Commodity: paper bags.<br>
+        Rate: $2500.<br>
+        MC: 166960.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-261611559-5060-219@BJC.BGI.A.CJ-BAFC</td>
+      <td>56%</td>
+      <td>10</td>
+      <td>77%</td>
+      <td>
+        Pickup: Conroe, TX.<br>
+        Delivery: Mineral Wells, TX.<br>
+        Appointment: set.<br>
+        Commodity: solar panels.<br>
+        Weight: 41,865 lbs.<br>
+        Pallets: 20.<br>
+        Rate: $950–$1150.<br>
+        Contact: Solomon, phone: 760-530-2734.
+      </td>
+    </tr>
+  </table>
+</div>
+ <div class="section card">
+  <h3>Checklist Coverage – Low Performing Calls</h3>
+  <p>This table shows discovery coverage on low-performing calls. The checklist score reflects how many required data points were captured during each call.</p>
+
+  <table class="risk-table">
+    <tr>
+      <th>Call ID</th>
+      <th>Success Rate</th>
+      <th>Checklist Score<br>(max 18)</th>
+      <th>Percentile</th>
+      <th>Details</th>
+    </tr>
+
+    <tr>
+      <td>aud-1585955193-5060-8@BJC.BGI.A.F-3C68.wav</td>
+      <td>6%</td>
+      <td>1</td>
+      <td>0%</td>
+      <td>
+        Delivery location (New Hampshire) is mentioned.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-20250516170444050935-b284881c0dd55d533177ca54804c6d31-B36E.wav</td>
+      <td>6%</td>
+      <td>1</td>
+      <td>0%</td>
+      <td>
+        Load reference numbers mentioned: C-Z-O, 1944, C004252 FI/Wayne, 895, CO04 0042525/win.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-991513736-5060-19@BJC.BGI.A.FA-2216.wav</td>
+      <td>11%</td>
+      <td>2</td>
+      <td>3%</td>
+      <td>
+        Pickup city: San Pedro. Delivery city: San Pedro.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-1687634856-5060-58@BJC.BGI.A.BC-2D64 (1).wav</td>
+      <td>11%</td>
+      <td>2</td>
+      <td>3%</td>
+      <td>
+        Weight: 67,000 lbs. Rate: $3,000.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-39848062-5060-64@BJC.BGI.A.CI-3B79.wav</td>
+      <td>11%</td>
+      <td>2</td>
+      <td>3%</td>
+      <td>
+        Prior relationship mentioned.<br>
+        Trailer types: stepdad conestoga, flatbed conestoga, open deck.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-1241413177-5060-45@BJC.BGI.A.CI-318B.wav</td>
+      <td>11%</td>
+      <td>2</td>
+      <td>3%</td>
+      <td>
+        Customer is mailing a check — indicates prior setup.<br>
+        Existing customer, billing address confirmed.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-1435983677-5060-56@BJC.BGI.A.CI-3891.wav</td>
+      <td>11%</td>
+      <td>2</td>
+      <td>3%</td>
+      <td>
+        Trailer types: Conestoga, box truck. <br>
+        Special requirement: side loading.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-1987888221-5060-72@BJC.BGI.A.FA-4056.wav</td>
+      <td>11%</td>
+      <td>2</td>
+      <td>3%</td>
+      <td>
+        Mention of "last time we spoke".<br>
+        Point of contact: Mr. Davis and Manny.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-20250520152017007146-b284881c0dd55d533177ca54804c6d31-5C68 (1).wav</td>
+      <td>11%</td>
+      <td>2</td>
+      <td>3%</td>
+      <td>
+        Past business mentioned.<br>
+        Point of contact: Dennis, Brian, Rick.
+      </td>
+    </tr>
+
+    <tr>
+      <td>aud-20250520204213019865-b284881c0dd55d533177ca54804c6d31-79F0.wav</td>
+      <td>11%</td>
+      <td>2</td>
+      <td>3%</td>
+      <td>
+        Offered rate: $5.50 per mile.<br>
+        Load reference/driver info requested.
+      </td>
+    </tr>
+  </table>
+</div>
+
+  <div class="section card">
+    <h2>Top Risks</h2>
+    <p>This section outlines the most critical risks impacting deal progression. Each risk type is defined and evaluated by its impact on sales outcomes. Practical recommendations are provided to mitigate these risks, along with real examples from the top 10 flagged calls to support targeted coaching and pipeline recovery.</p>
+ 
+    
+    <table class="call-table">
+      <tr><th>Trigger</th><th># Calls</th><th>Definition</th><th>Impact</th><th>Action</th></tr>
+      <tr>
+        <td><strong>No Next Step</strong></td>
+        <td>42</td>
+        <td>Meeting ends without a clear call-to-action or confirmed next step.</td>
+        <td>Pipeline stalls, increased risk of losing momentum and dropping the deal.</td>
+        <td>Follow up immediately to confirm the next step; define owner and timeline.</td>
+      </tr>
+      <tr>
+        <td><strong>No Pain Confirmed</strong></td>
+        <td>38</td>
+        <td>Customer didn’t confirm any specific pain or challenge during the conversation.</td>
+        <td>Low engagement; unclear value perception; risk of wasting time on unqualified prospects.</td>
+        <td>Re-engage with deep discovery questions or consider disqualifying the opportunity.</td>
+      </tr>
+      <tr>
+        <td><strong>Budget Not Confirmed</strong></td>
+        <td>32</td>
+        <td>Customer didn’t validate price range, budget availability, or decision-making financial process.</td>
+        <td>High risk of late-stage drop-off; deal may not be viable without budget alignment.</td>
+        <td>Reconnect to clarify budget fit and whether an Economic Buyer has been involved.</td>
+      </tr>
+      <tr>
+        <td><strong>Decision Maker Not Mentioned</strong></td>
+        <td>30</td>
+        <td>No mention of a person with authority (e.g., Economic Buyer, final decision maker).</td>
+        <td>Rep may be dealing only with influencers; deal stalls or dies without executive sponsorship.</td>
+        <td>Identify and engage the real decision maker(s) using stakeholder mapping and direct questions.</td>
+      </tr>
+      <tr>
+        <td><strong>Unresolved Objection</strong></td>
+        <td>12</td>
+        <td>A customer objection was raised but not addressed before deal was lost or stalled.</td>
+        <td>Missed opportunity to save deal; eroded trust and credibility; higher churn risk.</td>
+        <td>Re-engage to revisit and resolve the objection using tailored messaging or relevant case studies.</td>
+      </tr>
+      <tr>
+        <td><strong>Buying Signals Ignored (Pricing/Timeline)</strong></td>
+        <td>1</td>
+        <td>The buyer asked about pricing, availability, or delivery/timeline — but the rep deflected, delayed, or failed to acknowledge these signals directly during the call.</td>
+        <td>Signals buyer intent and readiness to move forward. When ignored, it creates friction, undermines credibility, and slows momentum at the most critical engagement point.</td>
+        <td>Train reps to recognize buying signals and respond in real-time. Even if full details can't be confirmed, acknowledge the question and provide next steps (“I'll get exact pricing by [X]”). Embed buying-signal responses in talk tracks.</td>
+      </tr>
+      <tr>
+        <td><strong>Frustration, disppointment, anger</strong></td>
+        <td>1</td>
+        <td>Buyer expressed visible frustration, disappointment, or anger during the call — either directly or via strong language, sarcasm, or tonal escalation.</td>
+        <td>Indicates loss of trust, credibility, or psychological safety in the buying relationship. If not acknowledged, emotional tension compounds and can sabotage the deal regardless of logic or value.</td>
+        <td>Acknowledge the emotion without defensiveness. Use active listening (“I hear this has been frustrating...”) and reframe the conversation to repair trust. Follow up separately with empathy if the issue couldn't be addressed in-call.</td>
+
+    </table>
+  </div>
+
+  <div class="section card">
+    <h3>Sample High-Risk Calls</h3>
+    <table class="call-table">
+      <tr><th>Call ID</th><th>Detected Triggers</th><th>Risk Comment</th></tr>
+ <td>aud-306415065-5060-119@BJC.BGI.A.BC-6FB0 (1).wav</td><td><span class="tag score">6</span></td><td><strong>No Next Step:</strong>Meeting ended without a defined next step, deadline, or responsible party. The rep said 'I'll get back to you' and 'Let me work on that' without specifics.
+<br><strong>Unresolved Objection:</strong>Customer raised a significant objection about the company's reputation for double brokering, citing personal negative experiences and reports. This objection was not effectively addressed or resolved by the salesperson.
+<br><strong>No Pain Confirmed:</strong>Sales rep never asked discovery questions about the client's broader goals or pains beyond the specific load details. The customer volunteered pain related to the company's reputation, but this was not proactively discovered.
+<br><strong>Emotional Frustration:</strong>Customer explicitly expressed frustration and disappointment using strong language like 'double brokering masters,' 'screwed personally,' and 'notorious for it.'
+<br><strong>Decision Maker Not Mentioned:</strong>No authority or economic buyer at the carrier's company was ever identified or mentioned during the call.
+<br><strong>Budget Not Confirmed:</strong>The rate was discussed ($5200 posted, $5400 highest rep can get), but the customer stated it was 'close' and they needed to 'work on that,' without confirming acceptance of the $5400 price point.</td></tr>
+<td>aud-261611559-5060-219@BJC.BGI.A.CJ-BAFC (1).wav</td><td><span class="tag score">5</span></td><td> <strong>No Next Step:</strong>Meeting ended without a defined next step, deadline, or responsible party.
+ <br><strong>Unresolved Objection:</strong>Customer raised a price objection ($950 vs $1150) that was not resolved or addressed directly in the conversation.
+<br><strong>No Pain Confirmed:</strong> Sales rep never asked discovery questions; conversation stayed at a transactional level without uncovering specific client goals or pains.
+<br><strong>Decision Maker Not Mentioned:</strong>No authority or economic buyer was ever identified or mentioned during the call.
+<br><strong>Budget Not Confirmed:</strong>Customer did not confirm price acceptance ($950 vs $1150) or budget availability.</td></tr>     
+<tr><td>aud-340583874-5060-26@BJC.BGI.A.H-4E90.wav</td><td><span class="tag score">5</span></td><td><strong>No Next Step:</strong> Meeting ended without a defined next step, deadline, or responsible party after the customer stated they could not work with the sales rep's company.
+<br><strong>Unresolved Objection:</strong>Customer raised an objection about not being able to work with the sales rep's MC due to past issues ("double brokering", "one-star story"), which was not resolved before the call ended.
+<br><strong>No Pain Confirmed:</strong>Sales rep did not ask discovery questions about the client's business, goals, or pain points; the conversation focused solely on the specific load details and the MC issue.
+<br><strong>Decision Maker Not Mentioned:</strong>No authority or economic buyer regarding the decision to work with specific MCs was identified or mentioned during the call.
+<br><strong>Budget Not Confirmed:</strong>Customer stated their expected rate ($600) but did not confirm acceptance of the sales rep's rate ($800) before the call ended.</td></tr>
+      <tr><td>aud-385398666-5060-32@BJC.BGI.A.BC-1CDA (1).wav</td><td><span class="tag score">5</span></td><td><strong>No Next Step:</strong>Meeting ended without a defined next step, deadline, or responsible party.
+<br><strong>Unresolved Objection:</strong>An objection regarding the equipment not fitting the load was raised and the conversation ended without attempting to resolve it.
+<br><strong>No Pain Confirmed:</strong>Sales rep never asked discovery questions; conversation stayed at a transactional level without uncovering specific client goals or pains.
+<br><strong>Decision Maker Not Mentioned:</strong>No authority or economic buyer was ever identified or mentioned during the call.
+<br><strong>Budget Not Confirmed:</strong>Customer did not confirm price acceptance or budget availability.</td></tr>
+      <tr><td>aud-1687634856-5060-58@BJC.BGI.A.BC-2D64 (1).wav</td><td><span class="tag score">5</span></td><td><strong>No Next Step:</strong>Meeting ended without a defined next step, deadline, or responsible party.
+<br><strong>Unresolved Objection:</strong>Customer raised a price objection ($3,000 vs $6,500) that the salesperson could not resolve, leading to the end of the call.
+<br><strong>No Pain Confirmed:</strong>Sales rep never asked discovery questions; conversation stayed at feature/transactional level without uncovering specific client goals or pains.
+<br><strong>Decision Maker Not Mentioned:</strong>No authority or economic buyer was ever identified or mentioned during the call.
+<br><strong>Budget Not Confirmed:</strong>Customer indicated $3,000 as their best offer but did not confirm whether they can accommodate the $6,500 price point or if $3,000 is their budget limit.
+<br><strong>Ignored Buying Signals:</strong>Customer initiated discussion about the rate/price, and the salesperson engaged directly in the negotiation, explaining costs and stating their required rate.</td></tr>
+    <tr><td>aud-1885316935-5060-117@BJC.BGI.A.H-CD46.wav</td><td><span class="tag score">5</span></td><td><strong>No Next Step:</strong>Meeting ended without a defined next step, deadline, or responsible party. The customer said 'Let me get back to you shortly, right away' which is vague.
+<br><strong>Unresolved Objection:</strong>Customer raised a price objection ('you can't come come up anymore like six five') which the salesperson directly refused ('no') and did not attempt to resolve or negotiate further.
+<br><strong>No Pain Confirmed:</strong>Sales rep never asked discovery questions; conversation stayed at feature/logistics detail level without uncovering specific client goals or pains related to their freight needs.
+<br><strong>Decision Maker Not Mentioned:</strong>No authority or economic buyer was ever identified or mentioned during the call, although the customer mentioned needing to 'talk to my guy in there'.
+<br><strong>Budget Not Confirmed:</strong> Customer did not confirm price acceptance or budget availability. They questioned the offered price, implying it was too low for them.</td></tr>  
+     <tr><td>aud-42251903-5060-243@BJC.BGI.A.CG-B914.wav</td><td><span class="tag score">4</span></td><td><strong>No Next Step:</strong>Meeting ended without a defined next step, deadline, or responsible party.
+<br><strong>No Pain Confirmed:</strong>No client pains or goals uncovered; only transactional details about a specific load were discussed.
+<br><strong>Decision Maker Not Mentioned:</strong>No mention of authority/Economic Buyer.
+<br><strong>Budget Not Confirmed:</strong>Customer did not confirm price acceptance or budget availability after the price was mentioned.</td></tr>
+      <tr><td>aud-798043598-5060-252@BJC.BGI.A.CG-C1F4.wav</td><td><span class="tag score">4</span></td><td><strong>No Next Step:</strong>Meeting ended without a defined next step, deadline, or responsible party.
+<br><strong>No Pain Confirmed:</strong>Sales rep never asked discovery questions; conversation stayed at feature level without uncovering specific client goals or pains.
+<br><strong>Decision Maker Not Mentioned:</strong>No authority or economic buyer was ever identified or mentioned during the call.
+<br><strong>Budget Not Confirmed:</strong>Customer did not confirm price acceptance or budget availability.</td></tr>
+<tr><td>aud-1155016397-5060-4@BJC.BGI.A.BJ-B0E8 (1).wav</td><td><span class="tag score">4</span></td><td><strong>No Next Step:</strong>Meeting ended abruptly after an objection without any discussion or agreement on a next step.
+<br><strong>Unresolved Objection:</strong>Customer stated they don't work with Landstar, and the salesperson ended the call without attempting to address or overcome this objection.
+<br><strong>No Pain Confirmed:</strong>The conversation was purely transactional about a specific load; no questions were asked to uncover the customer's broader needs, goals, or pain points related to transportation.
+<br><strong>Decision Maker Not Mentioned:</strong>No mention or identification of the authority or economic buyer for booking loads.</td></tr>
+  <tr><td>aud-1266740192-5060-27@BJC.BGI.A.DA-AD64.wav</td><td><span class="tag score">4</span></td><td><strong>No Next Step:</strong>Meeting ended without a defined next step, deadline, or responsible party.
+<br><strong>Unresolved Objection:</strong>Customer raised an objection ("I don't work with double brokers") that the salesperson did not address or resolve.
+<br><strong>No Pain Confirmed:</strong>Sales rep never asked discovery questions; conversation stayed at a transactional level without uncovering specific client goals or pains.
+<br><strong>Decision Maker Not Mentioned:</strong>No authority or economic buyer was ever identified or mentioned during the call.</td></tr> 
+ 
+</table>
+  </div>
+
+
+  <div class="section card">
+  <h2>Leadership Recommendations: Fixing Execution & Qualification Discipline</h2>
+
+  <h3>Problem Summary</h3>
+  <p>Sales calls are breaking down due to poor execution and missing data. Across 62 analyzed calls:</p>
+  <ul>
+    <li><strong>42 calls</strong> ended with <strong>no next step</strong></li>
+    <li><strong>38 calls</strong> lacked any confirmed client pain or context</li>
+    <li><strong>32–30 calls</strong> missed budget and decision-maker identification</li>
+    <li><strong>Checklist compliance is low:</strong> avg. score 6.6 / 18, with 19 calls scoring ≤ 4</li>
+    <li><strong>74% of calls</strong> had multiple high-risk issues</li>
+  </ul>
+
+  <h3>Recommendations</h3>
+
+  <h4>1. Enforce Complete Discovery Discipline</h4>
+  <ul>
+    <li>Integrate <strong>Load Discovery Checklist</strong> into CRM: pickup/delivery, commodity, weight, trailer, MC, contact, rate</li>
+    <li>Display <strong>“Checklist Completion Score”</strong> in pipeline views</li>
+    <li>Flag all calls with &lt;50% checklist completion for review</li>
+  </ul>
+
+  <h4>2. Operationalize Broker Load Inquiry Standards</h4>
+  <ul>
+    <li>Script standard discovery openers: “<em>Are we set up with this broker?</em>” / “<em>Do they work with Landstar?</em>”</li>
+    <li>Make these fields mandatory in onboarding & CRM templates</li>
+    <li>Create a “<strong>Load Inquiry Call Template</strong>” with all required fields auto-tagged</li>
+  </ul>
+
+  <h4>3. Fix the Top 4 Execution Gaps</h4>
+  <table class="call-table">
+    <tr>
+      <th>Execution Gap</th>
+      <th># Calls Affected</th>
+      <th>Business Risk</th>
+      <th>Solution</th>
+    </tr>
+    <tr>
+      <td>No Next Step</td>
+      <td>42</td>
+      <td>Deal freeze, stalled pipeline</td>
+      <td>Add CTA prompts to CRM + train on call transitions</td>
+    </tr>
+    <tr>
+      <td>No Pain Confirmed</td>
+      <td>38</td>
+      <td>No urgency → low conversion</td>
+      <td>“Discovery-first” call structure & cheat sheet</td>
+    </tr>
+    <tr>
+      <td>Budget Not Confirmed</td>
+      <td>32</td>
+      <td>Late-stage drop-off</td>
+      <td>“Fast BANT” coaching module + CRM validation</td>
+    </tr>
+    <tr>
+      <td>Decision Maker Missing</td>
+      <td>30</td>
+      <td>Wrong contact → ghosting</td>
+      <td>CRM: flag if no buyer mentioned</td>
+    </tr>
+  </table>
+
+  <h4>4. Build High-Impact Call Blueprint</h4>
+  <ul>
+    <li>Use top 10 calls (score ≥ 12) as examples of full qualification execution</li>
+    <li>Launch weekly “<strong>Call of the Week</strong>” reviews with transcript highlights</li>
+    <li>Tag what works: tone, checklist coverage, close style</li>
+  </ul>
+
+  <h4>5. Create a Measurable Compliance Framework</h4>
+  <ul>
+    <li>Live dashboard tracking:
+      <ul>
+        <li>% of calls with full commodity/pickup/delivery/rate</li>
+        <li>% of calls missing MC or decision-maker info</li>
+        <li>Risk alerts for calls with 2+ missing checklist fields</li>
+      </ul>
+    </li>
+    <li>Auto-alert team leads on critical checklist violations</li>
+  </ul>
+
+  <h4>6. Weekly Metrics to Track</h4>
+  <ul>
+    <li>% of calls with confirmed pain + next step</li>
+    <li>% of calls missing budget or decision-maker clarity</li>
+    <li>% of calls flagged with 2+ high-risk issues</li>
+    <li>% of calls scoring ≥75% on discovery checklist</li>
+  </ul>
+
+  <h3>Strategic Summary for Sales Leadership</h3>
+  <p>The root cause of poor performance is not leads or talent — it’s structural inconsistency in discovery, qualification, and execution. With simple system fixes and structured coaching, these issues can be reversed within 30 days:</p>
+  <ul>
+    <li>Embed checklist discipline into every rep workflow</li>
+    <li>Use CRM prompts to enforce qualification structure</li>
+    <li>Coach with real calls, not general advice</li>
+  </ul>
+  <p><strong>This is coachable, measurable, and fixable — without adding headcount.</strong></p>
+</div>
+
+
+</div>
+<script>
+  function getValue(id) {
+    const el = document.getElementById(id);
+    return el ? parseInt(el.textContent) || 0 : 0;
+  }
+
+  const total = getValue('total-calls');
+  const excluded = getValue('excluded-calls');
+  const flagged = getValue('risk-calls');
+  const safe = total - excluded - flagged;
+
+  const data = [flagged, excluded, safe];
+  const labels = ['Flagged Calls', 'Excluded Calls', 'Calls Without Flags'];
+  const colors = ['#e74c3c', '#fdcb6e', '#00b894'];
+  const totalSum = data.reduce((a, b) => a + b, 0);
+
+  new Chart(document.getElementById('summaryPieChart'), {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: colors
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const val = ctx.parsed;
+              const pct = ((val / totalSum) * 100).toFixed(1);
+              return `${ctx.label}: ${val} calls (${pct}%)`;
+            }
+          }
+        },
+        datalabels: {
+          color: '#fff',
+          font: { weight: 'bold' },
+          formatter: (value) => `${((value / totalSum) * 100).toFixed(1)}%`
+        }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+</script>
+<script>
+  const dateEl = document.getElementById('report-date');
+  const today = new Date();
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  dateEl.textContent = today.toLocaleDateString('en-US', options);
+</script>
+<script>
+  const scoreTags = document.querySelectorAll('.tag.score');
+
+  let maxScore = 0;
+  scoreTags.forEach(tag => {
+    const val = parseInt(tag.textContent);
+    if (val > maxScore) maxScore = val;
+  });
+
+  scoreTags.forEach(tag => {
+    const value = parseInt(tag.textContent);
+    if (!isNaN(value)) {
+      const intensity = value / maxScore;
+
+      // Градиент: от ярко-красного (240, 60, 60) до светло-розового (255, 200, 200)
+      const r = Math.round(240 + (255 - 240) * (1 - intensity));
+      const g = Math.round(60 + (200 - 60) * (1 - intensity));
+      const b = Math.round(60 + (200 - 60) * (1 - intensity));
+
+      tag.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+      tag.style.color = '#fff'; // белый текст для контраста
+    }
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const ctx = document.getElementById('checklistChart').getContext('2d');
+
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['0–25% (Score 0–4)', '25–50% (Score 5–6)', '50–75% (Score 7–9)', '75–100% (Score 10–15)'],
+    datasets: [{
+      label: 'Number of Calls',
+      data: [19, 12, 16, 15],
+      backgroundColor: [
+        'rgba(255, 99, 132, 0.7)',
+        'rgba(255, 159, 64, 0.7)',
+        'rgba(75, 192, 192, 0.7)',
+        'rgba(54, 162, 235, 0.7)'
+      ],
+      borderColor: [
+        'rgba(255, 99, 132, 1)',
+        'rgba(255, 159, 64, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(54, 162, 235, 1)'
+      ],
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(ctx) {
+            const label = ctx.dataset.label || '';
+            return `${label}: ${ctx.raw} calls`;
+          }
+        }
+      },
+      title: {
+        display: false,
+        text: 'Checklist Compliance by Score Range'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 5
+        },
+        title: {
+          display: true,
+          text: 'Call Count'
+        }
+      }
+    }
+  }
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Pie chart: Call Risk Breakdown
+  const ctxPie = document.getElementById('riskPieChart');
+  new Chart(ctxPie, {
+    type: 'pie',
+    data: {
+      labels: ['Flagged Calls', 'Excluded Calls', 'Calls Without Flags'],
+      datasets: [{
+        data: [51, 1, 10],
+        backgroundColor: ['#FF4C4C', '#FFC857', '#2EC4B6'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: {
+              size: 14,
+              family: 'Arial'
+            }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: context => {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const value = context.raw;
+              const percent = ((value / total) * 100).toFixed(1);
+              return `${context.label}: ${value} calls (${percent}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Bar chart: Checklist Compliance
+  const ctxBar = document.getElementById('checklistBarChart');
+  new Chart(ctxBar, {
+    type: 'bar',
+    data: {
+      labels: [
+        '0–25% (Score 0–4)',
+        '25–50% (Score 5–6)',
+        '50–75% (Score 7–9)',
+        '75–100% (Score 10–15)'
+      ],
+      datasets: [{
+        label: 'Call Count',
+        data: [19, 12, 16, 15],
+        backgroundColor: ['#FF4C4C', '#FFB877', '#7ED6C5', '#6DA9E4'],
+        borderRadius: 6,
+        barThickness: 40
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 5,
+            font: {
+              size: 12,
+              family: 'Arial'
+            }
+          },
+          title: {
+            display: true,
+            text: 'Call Count',
+            font: {
+              size: 14,
+              weight: 'bold',
+              family: 'Arial'
+            }
+          }
+        },
+        x: {
+          ticks: {
+            font: {
+              size: 12,
+              family: 'Arial'
+            }
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: context => `${context.raw} calls`
+          }
+        }
+      }
+    }
+  });
+</script>
+<script>
+  document.querySelectorAll("table").forEach(table => {
+    const headers = Array.from(table.querySelectorAll("thead th, tr:first-child th, tr:first-child td"))
+      .map(h => h.textContent.trim().toLowerCase());
+
+    const scoreColIndex = headers.findIndex(h => h.includes("checklist score"));
+    const triggerColIndex = headers.findIndex(h => h.includes("trigger"));
+
+    table.querySelectorAll("tr").forEach(row => {
+      const cells = row.querySelectorAll("td");
+
+      [scoreColIndex, triggerColIndex].forEach(colIndex => {
+        const cell = cells[colIndex];
+        if (!cell || cell.classList.contains("no-badge")) return;
+
+        const text = cell.textContent.trim();
+        const value = parseInt(text);
+        if (isNaN(value)) return;
+
+        const badge = document.createElement("span");
+        badge.classList.add("score-badge");
+        badge.textContent = value;
+
+        // Checklist Score: 0–18 (зелёная шкала)
+        if (colIndex === scoreColIndex) {
+          if (value >= 14) badge.classList.add("score-high");
+          else if (value >= 8) badge.classList.add("score-medium");
+          else badge.classList.add("score-low");
+        }
+
+        // Triggers: 0–7 (чем выше — тем краснее)
+        if (colIndex === triggerColIndex) {
+          if (value >= 5) badge.classList.add("risk-high");
+          else if (value >= 2) badge.classList.add("risk-medium");
+          else badge.classList.add("risk-low");
+        }
+
+        cell.textContent = "";
+        cell.appendChild(badge);
+      });
+    });
+  });
+</script>
+
+
+
+
+
+</body>
+</html>
+
+
